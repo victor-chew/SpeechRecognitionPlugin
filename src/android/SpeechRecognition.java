@@ -124,9 +124,9 @@ public class SpeechRecognition extends CordovaPlugin {
 
         final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"voice.recognition.test");
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"org.apache.cordova.speech");
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,lang);
-
+		intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5);
 
         Handler loopHandler = new Handler(Looper.getMainLooper());
@@ -145,16 +145,31 @@ public class SpeechRecognition extends CordovaPlugin {
     }
     
     private void stop(boolean abort) {
+		Log.d(LOG_TAG, "stop(" + (abort ? "true" : "false") + ")");
         this.aborted = abort;
-        Handler loopHandler = new Handler(Looper.getMainLooper());
-        loopHandler.post(new Runnable() {
+		if (abort) {
+			Handler loopHandler = new Handler(Looper.getMainLooper());
+			loopHandler.post(new Runnable() {
 
-            @Override
-            public void run() {
-                recognizer.stopListening();
-            }
-            
-        });
+				@Override
+				public void run() {
+					Log.d(LOG_TAG, "recognizer.cancel()");
+					recognizer.cancel();
+				}
+				
+			});
+		} else {
+			Handler loopHandler = new Handler(Looper.getMainLooper());
+			loopHandler.post(new Runnable() {
+
+				@Override
+				public void run() {
+					Log.d(LOG_TAG, "recognizer.stopListening()");
+					recognizer.stopListening();
+				}
+				
+			});
+		}
     }
 
     /**
